@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title></title>
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    #father {
+      width: 100%;
+      height: 600px;
+      background: url(img/sky.png);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #bird {
+      width: 30px;
+      height: 30px;
+      background: url(img/bird1.png);
+      position: absolute;
+      top: calc(50% - 30px);
+      left: calc(50% - 30px);
+    }
+
+    #new {
+      position: absolute;
+      top: calc(50% + 50px);
+      left: calc(50% - 80px);
+      font-size: 40px;
+      font-weight: bold;
+      color: red;
+      cursor: pointer;
+    }
+
+    #mask {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 9999;
+    }
+
+    #gameOver {
+      position: absolute;
+      top: calc(50% - 100px);
+      left: calc(50% - 100px);
+      color: yellow;
+      font-size: 50px;
+      font-weight: bold;
+      display: none;
+      z-index: 999999;
+    }
+
+    #finalScore {
+      color: red;
+      position: absolute;
+      top: 50%;
+      left: calc(50% - 150px);
+      font-size: 50px;
+      font-weight: bold;
+      z-index: 999999;
+    }
+
+    h2 {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="father">
+    <div id="bird"></div>
+    <div id="new">开始游戏</div>
+    <div id="mask"></div>
+    <div id="gameOver">游戏结束</div>
+    <div id="finalScore"></div>
+    <h2>你当前的分数是:0</h2>
+  </div>
+  <script type="text/javascript">
+    // 获取背景
+    const father = document.querySelector("#father");
+    // 获取小鸟
+    const bird = document.querySelector("#bird");
+    // 获取开始游戏文字
+    const btnNew = document.querySelector("#new");
+    // 获取遮罩层
+    const mask = document.querySelector("#mask");
+    // 获取游戏结束文字
+    const gameOver = document.querySelector("#gameOver");
+    // 获取分数显示
+    const h2 = document.querySelector('h2');
+    const finalScore = document.querySelector('#finalScore')
+    // 背景移动速度
+    let i = 0;
+    // 设置分数
+    let score = 0;
+    // 声明一个变量确定小鸟是否死了
+    let flying = true;
+    let birdObj = {
+      x: bird.offsetLeft,
+      y: bird.offsetTop,
+      stepY: 0,
+    };
+    // 起始页面背景和小鸟的移动
+    const timer = setInterval(function () {
+      i -= 5;
+      birdObj.stepY += 1;
+      birdObj.y += birdObj.stepY;
+      if (birdObj.stepY >= 10) {
+        birdObj.stepY = -10;
+        birdObj.y += birdObj.stepY;
+      }
+      // 小鸟的上下移动
+      bird.style.top = birdObj.y + "px";
+      // 背景的移动
+      father.style.backgroundPositionX = i + "px";
+    }, 30);
+
+    // 点击开始游戏文字消失
+    btnNew.onclick = function () {
+      h2.style.display = 'block';
+      btnNew.style.display = "none";
+      // 清除起始页面计时器
+      clearInterval(timer);
+      // 小鸟加速度重新设置为0
+      birdObj.stepY = 0;
+      // 开启游戏新定时器
+      setInterval(function () {
+        if (flying == true) {
+          // 背景移动速度加快
+          i -= 7;
+          father.style.backgroundPositionX = i + "px";
+          // 加速度加快，往下坠落
+          bird.style.left = "52px";
+          birdObj.stepY += 1;
+          birdObj.y += birdObj.stepY;
+          bird.style.top = birdObj.y + "px";
+
+          // 判断小鸟死时遮罩层和gameover的显示
+          if (birdObj.y <= 0 || birdObj.y >= 560) {
+            flying = false;
+            mask.style.display = "block";
+            gameOver.style.display = "block";
+            finalScore.innerHTML = '你最终分数为' + score;
+          }
+        }
+      }, 30);
+      // 监听背景点击事件  点击背景跳跃
+      father.onclick = function () {
+        birdObj.stepY = -10;
+      };
+
+      // 监听页面键盘事件
+      document.addEventListener("keydown", function (event) {
+        // 回车按下消失
+        if (event.keyCode == 13) {
+          btnNew.style.display = "none";
+        }
+        // 空格按下跳跃
+        if (event.keyCode == 32) {
+          birdObj.stepY = -10;
+        }
+      });
+
+      function createZz(x) {
+        // 创造柱子对象
+        let zz = {};
+        // 柱子的x轴距离
+        zz.x = x;
+        // 上边柱子的高度
+        zz.sheight = Math.floor(50 + Math.random() * 200);
+        // 下边柱子的高度
+        zz.xheight = 600 - 150 - zz.sheight;
+
+        // 创建上边的柱子
+        let uzz = document.createElement("div");
+        // 设置柱子样式
+        uzz.style.width = "52px";
+        uzz.style.height = zz.sheight + "px";
+        uzz.style.background = "url(img/pipe2.png) no-repeat center bottom";
+        uzz.style.position = "absolute";
+        uzz.style.left = zz.x + "px";
+        uzz.style.top = "0px";
+        // 将上边的柱子添加到页面上
+        father.appendChild(uzz);
+
+        // 创建下边的柱子
+        let dzz = document.createElement("div");
+        // 设置下面柱子的样式
+        dzz.style.width = "52px";
+        dzz.style.height = zz.xheight + "px";
+        dzz.style.background = "url(img/pipe1.png)";
+        dzz.style.position = "absolute";
+        dzz.style.left = zz.x + "px";
+        dzz.style.top = zz.sheight + 150 + "px";
+        // 将下边的柱子添加到页面上
+        father.appendChild(dzz);
+
+        setInterval(function () {
+          if (flying == true) {
+            zz.x -= 7;
+            birdObj.x = 52;
+            uzz.style.left = zz.x + "px";
+            dzz.style.left = zz.x + "px";
+            // 当柱消失后重新出现
+            if (zz.x <= -52) {
+              zz.x = 1800;
+              score++;
+              h2.innerHTML = '你当前的分数是:' + score;
+            }
+
+            // 判断小鸟是否撞到了柱子
+            let ucheck =
+              birdObj.x + 30 >= zz.x &&
+              birdObj.x < zz.x + 52 &&
+              birdObj.y <= zz.sheight;
+            let dcheck =
+              birdObj.x + 30 >= zz.x &&
+              birdObj.x < zz.x + 52 &&
+              birdObj.y + 30 >= zz.sheight + 148;
+            // 当小鸟撞击柱子后死
+            if (ucheck || dcheck) {
+              flying = false;
+              mask.style.display = "block";
+              gameOver.style.display = "block";
+              finalScore.innerHTML = '你最终分数为' + score;
+            }
+          }
+        }, 30);
+      }
+      // 调用创建柱子的函数
+      createZz(300);
+      createZz(600);
+      createZz(900);
+      createZz(1200);
+      createZz(1500);
+      createZz(1800);
+    };
+  </script>
+</body>
+
+</html>
